@@ -202,6 +202,8 @@ if(${GRPC_LIB} STREQUAL "package")
     # GRPC and Protocol Buffers libraries location
     list(APPEND CMAKE_PREFIX_PATH "D:/projects/grpc/out/install")
     
+    #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
+    
     # Find Protobuf installation
     # Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
     set(protobuf_MODULE_COMPATIBLE TRUE)
