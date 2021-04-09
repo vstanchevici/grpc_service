@@ -136,7 +136,7 @@ endforeach()
 
 
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
-target_include_directories(${PROJECT_NAME} PRIVATE  ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
 
 
 # test mscv
@@ -191,6 +191,7 @@ if(${GRPC_LIB} STREQUAL "external_project")
     message(STATUS "processing external_project")
 endif()
 
+set (CMAKE_CROSSCOMPILING TRUE)
 
 if(${GRPC_LIB} STREQUAL "package")
     message(STATUS "processing package")
@@ -229,8 +230,36 @@ if(${GRPC_LIB} STREQUAL "package")
 endif()
 
 
+# Proto file
+get_filename_component(hw_proto "protos/helloworld.proto" ABSOLUTE)
+get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
+message(STATUS "hw_proto->" ${hw_proto})
+message(STATUS "hw_proto_path->" ${hw_proto_path})
+message(STATUS "_PROTOBUF_PROTOC->" ${_PROTOBUF_PROTOC})
+
+
+# Generated sources
+set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc")
+set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.h")
+set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
+set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
+add_custom_command(
+      COMMENT "*********************Running add_custom_command"
+      OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
+      COMMAND ${_PROTOBUF_PROTOC}
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+        -I "${hw_proto_path}"
+        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+        "${hw_proto}"
+      DEPENDS "${hw_proto}")
+
+# Include generated *.pb.h files
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
  
+target_sources(${PROJECT_NAME} PRIVATE "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}")
+
 #set(grpc "grpc")
 #set(GRPC_INSTALL_DIR "")
 #add_subdirectory(third_party/${grpc})
