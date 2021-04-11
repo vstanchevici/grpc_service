@@ -10,13 +10,15 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 #
 
 # Register general cmake commands
-#include(cmake/Custom.cmake)
+include(cmake/Custom.cmake)
 
 # Set policies
-#set_policy(CMP0054 NEW) # ENABLE CMP0054: Only interpret if() arguments as variables or keywords when unquoted.
-#set_policy(CMP0042 NEW) # ENABLE CMP0042: MACOSX_RPATH is enabled by default.
-#set_policy(CMP0063 NEW) # ENABLE CMP0063: Honor visibility properties for all target types.
-#set_policy(CMP0077 NEW) # ENABLE CMP0077: option() honors normal variables
+set_policy(CMP0054 NEW) # ENABLE CMP0054: Only interpret if() arguments as variables or keywords when unquoted.
+set_policy(CMP0042 NEW) # ENABLE CMP0042: MACOSX_RPATH is enabled by default.
+set_policy(CMP0063 NEW) # ENABLE CMP0063: Honor visibility properties for all target types.
+set_policy(CMP0077 NEW) # ENABLE CMP0077: option() honors normal variables
+set_policy(CMP0091 NEW) # ENABLE CMP0091: 
+
 
 # Remove ZERO_CHECK target
 #set(CMAKE_SUPPRESS_REGENERATION true)
@@ -89,6 +91,11 @@ set(IDE_FOLDER "")
 # Declare project
 project(${META_PROJECT_NAME} LANGUAGES C CXX)
 
+# Set standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -143,20 +150,18 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_RO
 #https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(TL_LIB "shared" CACHE STRING "runtime lib build type")
+    set(GRPC_SERVICE_MSVC_RUNTIME_LIBRARY "MultiThreadedStatic" CACHE STRING "Select the MSVC runtime library for use by compilers targeting the MSVC ABI.")
     
-    set(TL_VALUES "shared;static" CACHE INTERNAL "List of possible values for the TL_LIB")
+    set_property(CACHE GRPC_SERVICE_MSVC_RUNTIME_LIBRARY PROPERTY STRINGS "MultiThreadedShared;MultiThreadedStatic")
 
-    set_property(CACHE TL_LIB PROPERTY STRINGS ${TL_VALUES})
-
-    if(${TL_LIB} STREQUAL "shared")
+    if(${GRPC_SERVICE_MSVC_RUNTIME_LIBRARY} STREQUAL "MultiThreadedShared")
         message(STATUS "runtime shared")
-        set_property(TARGET ${project} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+        set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     endif()
 
-    if(${TL_LIB} STREQUAL "static")
+    if(${GRPC_SERVICE_MSVC_RUNTIME_LIBRARY} STREQUAL "MultiThreadedStatic")
         message(STATUS "runtime static")
-        set_property(TARGET ${project} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
 endif()
 
@@ -181,7 +186,7 @@ include(ExternalProject)
 #------------------------------------------------
 
 
-set(GRPC_LIB "external_project" CACHE STRING "Type module")
+set(GRPC_LIB "package" CACHE STRING "Type module")
  
 set(GRPC_LIB_VALUES "external_project;package" CACHE INTERNAL "List of possible values for the GRPC_LIB")
 
@@ -191,7 +196,7 @@ if(${GRPC_LIB} STREQUAL "external_project")
     message(STATUS "processing external_project")
 endif()
 
-set (CMAKE_CROSSCOMPILING TRUE)
+find_package(Threads REQUIRED)
 
 if(${GRPC_LIB} STREQUAL "package")
     message(STATUS "processing package")
@@ -232,13 +237,74 @@ if(${GRPC_LIB} STREQUAL "package")
 endif()
 
 
-# Proto file
+# Proto files
+set(PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/")
+
+file(
+    GLOB_RECURSE PROTO_LIST
+    LIST_DIRECTORIES false
+    "${PROTO_ROOT_PATH}*.proto"
+)
+
+set(HW_GEN_BASE_PROTO_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY ${HW_GEN_BASE_PROTO_PATH})
+
+#message(STATUS "protos: " ${PROTO_LIST})
+add_custom_target(proto SOURCES ${PROTO_LIST})
+set_source_files_properties(${PROTO_LIST} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+foreach(_proto IN ITEMS ${PROTO_LIST})
+    message(STATUS "protos: " ${_proto})
+    get_filename_component(_proto_path "${_proto}" PATH)
+    file(RELATIVE_PATH _proto_path_rel "${PROTO_ROOT_PATH}" "${_proto_path}")
+    string(REPLACE "/" "\\" _proto_group_path "${_proto_path_rel}")
+    source_group("proto\\${_proto_group_path}" FILES "${_proto}")
+endforeach()
+
+
+foreach(hw_proto IN ITEMS ${PROTO_LIST})
+    get_filename_component(hw_proto_name "${hw_proto}" NAME_WLE)
+    get_filename_component(hw_proto_path "${hw_proto}" PATH)
+    
+    #message(STATUS "hw_proto->" ${hw_proto})
+    #message(STATUS "hw_proto_path->" ${hw_proto_path})
+
+    file(RELATIVE_PATH _proto_relative_path "${CMAKE_CURRENT_SOURCE_DIR}/" "${hw_proto_path}")
+    set(HW_GEN_PROTO_PATH "${HW_GEN_BASE_PROTO_PATH}/${_proto_relative_path}")
+    file(MAKE_DIRECTORY ${HW_GEN_PROTO_PATH})
+
+    # Generated sources
+    set(hw_proto_srcs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.pb.cc)
+    set(hw_proto_hdrs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.pb.h)
+    set(hw_grpc_srcs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.grpc.pb.cc)
+    set(hw_grpc_hdrs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.grpc.pb.h)
+
+    add_custom_command(
+          COMMENT "Running ${_PROTOBUF_PROTOC} for ${hw_proto_name}.proto"
+          OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
+          COMMAND ${_PROTOBUF_PROTOC}
+          ARGS --grpc_out "${HW_GEN_PROTO_PATH}"
+            --cpp_out "${HW_GEN_PROTO_PATH}"
+            -I "${hw_proto_path}"
+            --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+            "${hw_proto}"
+          DEPENDS "${hw_proto}")
+ 
+    target_sources(${PROJECT_NAME} PRIVATE ${hw_proto_srcs} ${hw_proto_hdrs} ${hw_grpc_srcs} ${hw_grpc_hdrs})    
+endforeach()
+
+# Include generated *.pb.h files
+message(STATUS "HW_GEN_PROTO_PATH: " ${HW_GEN_BASE_PROTO_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${HW_GEN_BASE_PROTO_PATH})
+
+target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+
+#[[
 get_filename_component(hw_proto "protos/helloworld.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
 message(STATUS "hw_proto->" ${hw_proto})
 message(STATUS "hw_proto_path->" ${hw_proto_path})
-message(STATUS "_PROTOBUF_PROTOC->" ${_PROTOBUF_PROTOC})
 
 
 # Generated sources
@@ -258,9 +324,20 @@ add_custom_command(
       DEPENDS "${hw_proto}")
 
 # Include generated *.pb.h files
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}" )
  
-target_sources(${PROJECT_NAME} PRIVATE "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}")
+target_sources(${PROJECT_NAME} PRIVATE ${hw_proto_srcs} ${hw_proto_hdrs} ${hw_grpc_srcs} ${hw_grpc_hdrs})
+
+target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
+]]
+
+#[[
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x600)
+endif()
+]]
 
 #set(grpc "grpc")
 #set(GRPC_INSTALL_DIR "")
