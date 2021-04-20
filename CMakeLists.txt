@@ -237,13 +237,13 @@ if(${GRPC_LIB} STREQUAL "package")
 endif()
 
 
-# Proto files
-set(PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/")
+# GRPC Proto files
+set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc/")
 
 file(
     GLOB_RECURSE PROTO_LIST
     LIST_DIRECTORIES false
-    "${PROTO_ROOT_PATH}*.proto"
+    "${GRPC_SERVICE_PROTO_ROOT_PATH}*.proto"
 )
 
 set(HW_GEN_BASE_PROTO_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -256,7 +256,7 @@ set_source_files_properties(${PROTO_LIST} PROPERTIES HEADER_FILE_ONLY TRUE)
 foreach(_proto IN ITEMS ${PROTO_LIST})
     message(STATUS "protos: " ${_proto})
     get_filename_component(_proto_path "${_proto}" PATH)
-    file(RELATIVE_PATH _proto_path_rel "${PROTO_ROOT_PATH}" "${_proto_path}")
+    file(RELATIVE_PATH _proto_path_rel "${GRPC_SERVICE_PROTO_ROOT_PATH}" "${_proto_path}")
     string(REPLACE "/" "\\" _proto_group_path "${_proto_path_rel}")
     source_group("proto\\${_proto_group_path}" FILES "${_proto}")
 endforeach()
