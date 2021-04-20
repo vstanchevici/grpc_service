@@ -145,7 +145,6 @@ endforeach()
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
 
-
 # test mscv
 #https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
 
@@ -205,8 +204,10 @@ if(${GRPC_LIB} STREQUAL "package")
     # on this system, so they can be located by find_package().
 
     # GRPC and Protocol Buffers libraries location
-    list(APPEND CMAKE_PREFIX_PATH "D:/projects/grpc/out/install")
+    list(APPEND CMAKE_PREFIX_PATH "D:/projects/grpc/out/install-release")
+
     
+
     #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
     
     # Find Protobuf installation
@@ -237,99 +238,68 @@ if(${GRPC_LIB} STREQUAL "package")
 endif()
 
 
-# GRPC Proto files
-set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc/")
+# GRPC service Proto files
+set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc")
+file(RELATIVE_PATH GRPC_SERVICE_PROTO_RELATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${GRPC_SERVICE_PROTO_ROOT_PATH}")
+set(GRPC_SERVICE_PROTO_GENERATED_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated/${GRPC_SERVICE_PROTO_RELATIVE_PATH}")
 
 file(
     GLOB_RECURSE PROTO_LIST
     LIST_DIRECTORIES false
-    "${GRPC_SERVICE_PROTO_ROOT_PATH}*.proto"
+    "${GRPC_SERVICE_PROTO_ROOT_PATH}/*.proto"
 )
 
-set(HW_GEN_BASE_PROTO_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
-file(MAKE_DIRECTORY ${HW_GEN_BASE_PROTO_PATH})
-
-#message(STATUS "protos: " ${PROTO_LIST})
 add_custom_target(proto SOURCES ${PROTO_LIST})
 set_source_files_properties(${PROTO_LIST} PROPERTIES HEADER_FILE_ONLY TRUE)
 
+
 foreach(_proto IN ITEMS ${PROTO_LIST})
-    message(STATUS "protos: " ${_proto})
+    get_filename_component(_proto_name "${_proto}" NAME_WLE)
     get_filename_component(_proto_path "${_proto}" PATH)
-    file(RELATIVE_PATH _proto_path_rel "${GRPC_SERVICE_PROTO_ROOT_PATH}" "${_proto_path}")
-    string(REPLACE "/" "\\" _proto_group_path "${_proto_path_rel}")
-    source_group("proto\\${_proto_group_path}" FILES "${_proto}")
-endforeach()
+    file(RELATIVE_PATH _rel_path "${GRPC_SERVICE_PROTO_ROOT_PATH}" "${_proto_path}")
+    #string(REPLACE "/" "\\" _rel_path "${_rel_path}")
+    source_group("grpc_services\\${_rel_path}" FILES "${_proto}")
 
-
-foreach(hw_proto IN ITEMS ${PROTO_LIST})
-    get_filename_component(hw_proto_name "${hw_proto}" NAME_WLE)
-    get_filename_component(hw_proto_path "${hw_proto}" PATH)
+    file(MAKE_DIRECTORY ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
     
-    #message(STATUS "hw_proto->" ${hw_proto})
-    #message(STATUS "hw_proto_path->" ${hw_proto_path})
-
-    file(RELATIVE_PATH _proto_relative_path "${CMAKE_CURRENT_SOURCE_DIR}/" "${hw_proto_path}")
-    set(HW_GEN_PROTO_PATH "${HW_GEN_BASE_PROTO_PATH}/${_proto_relative_path}")
-    file(MAKE_DIRECTORY ${HW_GEN_PROTO_PATH})
+    #message(STATUS "_proto->" ${_proto})
+    #message(STATUS "_proto_path->" ${_proto_path})
+    #message(STATUS "_rel_path->" ${_rel_path})
+    #message(STATUS "_gen_path->" ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
+    
 
     # Generated sources
-    set(hw_proto_srcs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.pb.cc)
-    set(hw_proto_hdrs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.pb.h)
-    set(hw_grpc_srcs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.grpc.pb.cc)
-    set(hw_grpc_hdrs ${HW_GEN_PROTO_PATH}/${hw_proto_name}.grpc.pb.h)
+    set(_proto_srcs ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}/${_proto_name}.pb.cc)
+    set(_proto_hdrs ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}/${_proto_name}.pb.h)
+    set(_grpc_srcs ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}/${_proto_name}.grpc.pb.cc)
+    set(_grpc_hdrs ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}/${_proto_name}.grpc.pb.h)
+    
+    #message(STATUS "_proto_srcs->" ${_proto_srcs})
+
+    source_group("generated/grpc_services/${_rel_path}" FILES "${_proto_srcs}")
+    source_group("generated/grpc_services/${_rel_path}" FILES "${_grpc_srcs}")
+    source_group("generated/grpc_services/${_rel_path}" FILES "${_proto_hdrs}")
+    source_group("generated/grpc_services/${_rel_path}" FILES "${_grpc_hdrs}")
 
     add_custom_command(
-          COMMENT "Running ${_PROTOBUF_PROTOC} for ${hw_proto_name}.proto"
-          OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
+          COMMENT "Running ${_PROTOBUF_PROTOC} for ${_proto_name}.proto"
+          OUTPUT "${_proto_srcs}" "${_proto_hdrs}" "${_grpc_srcs}" "${_grpc_hdrs}"
           COMMAND ${_PROTOBUF_PROTOC}
-          ARGS --grpc_out "${HW_GEN_PROTO_PATH}"
-            --cpp_out "${HW_GEN_PROTO_PATH}"
-            -I "${hw_proto_path}"
+          ARGS --grpc_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
+            --cpp_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
+            -I "${_proto_path}"
             --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-            "${hw_proto}"
-          DEPENDS "${hw_proto}")
+            "${_proto}"
+          DEPENDS "${_proto}")
  
-    target_sources(${PROJECT_NAME} PRIVATE ${hw_proto_srcs} ${hw_proto_hdrs} ${hw_grpc_srcs} ${hw_grpc_hdrs})    
+    target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})    
 endforeach()
 
 # Include generated *.pb.h files
-message(STATUS "HW_GEN_PROTO_PATH: " ${HW_GEN_BASE_PROTO_PATH})
-target_include_directories(${PROJECT_NAME} PRIVATE ${HW_GEN_BASE_PROTO_PATH})
+#message(STATUS "GRPC_SERVICE_PROTO_GENERATED_PATH: " ${GRPC_SERVICE_PROTO_GENERATED_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${GRPC_SERVICE_PROTO_GENERATED_PATH})
 
 target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
-
-#[[
-get_filename_component(hw_proto "protos/helloworld.proto" ABSOLUTE)
-get_filename_component(hw_proto_path "${hw_proto}" PATH)
-
-message(STATUS "hw_proto->" ${hw_proto})
-message(STATUS "hw_proto_path->" ${hw_proto_path})
-
-
-# Generated sources
-set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc")
-set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.h")
-set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
-set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
-add_custom_command(
-      COMMENT "*********************Running add_custom_command"
-      OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
-      COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-        -I "${hw_proto_path}"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-        "${hw_proto}"
-      DEPENDS "${hw_proto}")
-
-# Include generated *.pb.h files
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}" )
- 
-target_sources(${PROJECT_NAME} PRIVATE ${hw_proto_srcs} ${hw_proto_hdrs} ${hw_grpc_srcs} ${hw_grpc_hdrs})
-
-target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
-]]
 
 #[[
 if(NOT MSVC)
