@@ -150,7 +150,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_RO
 #https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(GRPC_SERVICE_MSVC_RUNTIME_LIBRARY "MultiThreadedStatic" CACHE STRING "Select the MSVC runtime library for use by compilers targeting the MSVC ABI.")
+    set(GRPC_SERVICE_MSVC_RUNTIME_LIBRARY "MultiThreadedStatic" CACHE STRING "Select the MSVC runtime library for use by compiler.")
     
     set_property(CACHE GRPC_SERVICE_MSVC_RUNTIME_LIBRARY PROPERTY STRINGS "MultiThreadedShared;MultiThreadedStatic")
 
