@@ -144,6 +144,8 @@ endforeach()
 
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
+#target_compile_definitions(${PROJECT_NAME} PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+
 
 # test mscv
 #https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
@@ -177,66 +179,57 @@ include(ExternalProject)
  
 #set(ColorValues "Red;Orange;Yellow;Green;Blue;Violet" CACHE INTERNAL "List of possible values for the Color cache variable")
 #set(ColorValues "Red;Orange;Yellow;Green;Blue;Violet" CACHE STRING "List of possible values for the Color cache variable")
-#set_property(CACHE BaseName PROPERTY STRINGS binary octal decimal hexadecimal)
 
 #set_property(CACHE Color PROPERTY STRINGS ${ColorValues})
  
 #message(STATUS "Color='${Color}'")
 #------------------------------------------------
 
+option(ADD_GRPC_EXTERNAL_PROJECT "Add gRPC ExternalProject" ON)
 
-set(GRPC_LIB "package" CACHE STRING "Type module")
- 
-set(GRPC_LIB_VALUES "external_project;package" CACHE INTERNAL "List of possible values for the GRPC_LIB")
 
-set_property(CACHE GRPC_LIB PROPERTY STRINGS ${GRPC_LIB_VALUES})
- 
-if(${GRPC_LIB} STREQUAL "external_project")
+if(ADD_GRPC_EXTERNAL_PROJECT)
     message(STATUS "processing external_project")
+endif(ADD_GRPC_EXTERNAL_PROJECT)
+
+# Here we assume that gRPC and all its dependencies are already installed
+# on this system, so they can be located by find_package().
+
+# GRPC and Protocol Buffers libraries location
+list(APPEND CMAKE_PREFIX_PATH "D:/projects/grpc/out/install-release")
+
+    
+#or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
+    
+# Find Protobuf installation
+# Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
+set(protobuf_MODULE_COMPATIBLE TRUE)
+find_package(Protobuf CONFIG REQUIRED)
+message(STATUS "Using protobuf ${Protobuf_VERSION}")
+
+set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
+set(_REFLECTION gRPC::grpc++_reflection)
+if(CMAKE_CROSSCOMPILING)
+    find_program(_PROTOBUF_PROTOC protoc)
+else()
+    set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
 endif()
+
+# Find gRPC installation
+# Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC ${gRPC_VERSION}")
+
+set(_GRPC_GRPCPP gRPC::grpc++)
+if(CMAKE_CROSSCOMPILING)
+    find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+else()
+    set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
+endif()    
+
+
 
 find_package(Threads REQUIRED)
-
-if(${GRPC_LIB} STREQUAL "package")
-    message(STATUS "processing package")
-
-    # This branch assumes that gRPC and all its dependencies are already installed
-    # on this system, so they can be located by find_package().
-
-    # GRPC and Protocol Buffers libraries location
-    list(APPEND CMAKE_PREFIX_PATH "D:/projects/grpc/out/install-release")
-
-    
-
-    #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
-    
-    # Find Protobuf installation
-    # Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
-    set(protobuf_MODULE_COMPATIBLE TRUE)
-    find_package(Protobuf CONFIG REQUIRED)
-    message(STATUS "Using protobuf ${Protobuf_VERSION}")
-
-    set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
-    set(_REFLECTION gRPC::grpc++_reflection)
-    if(CMAKE_CROSSCOMPILING)
-        find_program(_PROTOBUF_PROTOC protoc)
-    else()
-        set(_PROTOBUF_PROTOC $<TARGET_FILE:protobuf::protoc>)
-    endif()
-
-    # Find gRPC installation
-    # Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
-    find_package(gRPC CONFIG REQUIRED)
-    message(STATUS "Using gRPC ${gRPC_VERSION}")
-
-    set(_GRPC_GRPCPP gRPC::grpc++)
-    if(CMAKE_CROSSCOMPILING)
-        find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
-    else()
-        set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:gRPC::grpc_cpp_plugin>)
-    endif()    
-endif()
-
 
 # GRPC service Proto files
 set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc")
