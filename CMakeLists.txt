@@ -185,25 +185,16 @@ include(ExternalProject)
 #message(STATUS "Color='${Color}'")
 #------------------------------------------------
 
+include(FetchContent)
+include(ExternalProject)
+
 option(ADD_GRPC_EXTERNAL_PROJECT "Add gRPC ExternalProject" ON)
 
 
 if(ADD_GRPC_EXTERNAL_PROJECT)
 
-#[[
-ExternalProject_Add(grpc
-    PREFIX                  ${PROJECT_BINARY_DIR}/third_party/grpc
-    GIT_REPOSITORY          https://github.com/grpc/grpc.git
-    GIT_TAG                 v1.37.0
-    INSTALL_DIR             install
-    CMAKE_ARGS              -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/third_party/grpc/install
-    CMAKE_CACHE_ARGS       -DBUILD_TESTS:BOOL=FALSE -DBUILD_SHARED_LIBS:BOOL=FALSE
-    UPDATE_DISCONNECTED     True
-    UPDATE_COMMAND          ""
-)
-]]
+add_subdirectory(third_party/grpc)
 
-include(FetchContent)
 
 #[[
 FetchContent_Declare(grpc
@@ -221,6 +212,7 @@ FetchContent_Declare(grpc
 )
 ]]
 
+#[[
 FetchContent_Declare(grpc
     #PREFIX                  ${PROJECT_BINARY_DIR}/third_party/grpc
     GIT_REPOSITORY          https://github.com/grpc/grpc.git
@@ -236,6 +228,7 @@ FetchContent_Declare(grpc
 )
 
 FetchContent_MakeAvailable(grpc)
+]]
 
 endif(ADD_GRPC_EXTERNAL_PROJECT)
 
@@ -244,6 +237,7 @@ endif(ADD_GRPC_EXTERNAL_PROJECT)
 
 # GRPC and Protocol Buffers libraries location
 list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install)
+#list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install)
 
     
 #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
