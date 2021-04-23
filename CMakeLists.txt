@@ -236,8 +236,10 @@ endif(ADD_GRPC_EXTERNAL_PROJECT)
 # on this system, so they can be located by find_package().
 
 # GRPC and Protocol Buffers libraries location
-list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install)
-#list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/Debug)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/Release)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/RelWithDebInfo)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/MinSizeRel)
 
     
 #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
