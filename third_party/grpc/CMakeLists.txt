@@ -1,5 +1,8 @@
 #grpc
 
+#https://forums.accellera.org/topic/5777-cmake-install-both-debug-and-release-builds-of-systemc/
+
+#[[
 ExternalProject_Add(grpc
     PREFIX                  ${PROJECT_BINARY_DIR}/third_party/grpc
     GIT_REPOSITORY          https://github.com/grpc/grpc.git
@@ -15,7 +18,9 @@ ExternalProject_Add(grpc
     #CMAKE_CACHE_ARGS
     
     CONFIGURE_COMMAND       ${CMAKE_COMMAND} -S${PROJECT_BINARY_DIR}/third_party/grpc/repo -B${PROJECT_BINARY_DIR}/third_party/grpc/build/$<CONFIG>
-                            -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/third_party/grpc/install/$<CONFIG> -DCMAKE_BUILD_TYPE=$<CONFIG> -DCMAKE_INSTALL_CONFIG_NAME:STRING=$<CONFIG>
+                            -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/third_party/grpc/install/$<CONFIG> -DCMAKE_BUILD_TYPE=$<CONFIG>
+                            -DCMAKE_INSTALL_CONFIG_NAME=$<CONFIG>
+                            -DCMAKE_DEBUG_POSTFIX=$<$<CONFIG:Debug>:d>
                             -DBUILD_SHARED_LIBS:BOOL=OFF
                             -DgRPC_BUILD_GRPC_CSHARP_PLUGIN:BOOL=OFF
                             -DgRPC_BUILD_GRPC_NODE_PLUGIN:BOOL=OFF
@@ -42,5 +47,7 @@ ExternalProject_Add(grpc
     INSTALL_COMMAND         ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR}/third_party/grpc/build/$<CONFIG>
     #TEST_COMMAND           ""
 )
+]]
+
 
 
