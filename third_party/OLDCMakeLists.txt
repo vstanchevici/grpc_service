@@ -173,11 +173,74 @@ endif()
 
 include(ExternalProject)
 
+
+#------------------------------------------------
+#set(Color "Green" CACHE STRING "Color chosen by the user at CMake configure time")
+ 
+#set(ColorValues "Red;Orange;Yellow;Green;Blue;Violet" CACHE INTERNAL "List of possible values for the Color cache variable")
+#set(ColorValues "Red;Orange;Yellow;Green;Blue;Violet" CACHE STRING "List of possible values for the Color cache variable")
+
+#set_property(CACHE Color PROPERTY STRINGS ${ColorValues})
+ 
+#message(STATUS "Color='${Color}'")
+#------------------------------------------------
+
+include(FetchContent)
+include(ExternalProject)
+
+option(ADD_GRPC_EXTERNAL_PROJECT "Add gRPC ExternalProject" ON)
+
+
+if(ADD_GRPC_EXTERNAL_PROJECT)
+
+add_subdirectory(third_party/grpc)
+
+
+#[[
+FetchContent_Declare(grpc
+    #PREFIX                  ${PROJECT_BINARY_DIR}/${project}
+    SOURCE_DIR              ${PROJECT_SOURCE_DIR}/third_party/grpc
+    #INSTALL_DIR             install
+    #CMAKE_ARGS              -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/base/${project}/install
+    #CMAKE_CACHE_ARGS        -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/third_party/grpc/install
+    #UPDATE_DISCONNECTED     True
+    #UPDATE_COMMAND          ""
+    #CONFIGURE_COMMAND      ""
+    #BUILD_COMMAND          ""
+    #INSTALL_COMMAND        ""
+    #TEST_COMMAND           ""
+)
+]]
+
+#[[
+FetchContent_Declare(grpc
+    #PREFIX                  ${PROJECT_BINARY_DIR}/third_party/grpc
+    GIT_REPOSITORY          https://github.com/grpc/grpc.git
+    GIT_TAG                 v1.37.0
+    GIT_SHALLOW             1
+    GIT_SUBMODULES_RECURSE  1  
+    #INSTALL_DIR             install
+    CMAKE_ARGS              -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/third_party/grpc/install
+    #CONFIGURE_COMMAND ""
+    #BUILD_COMMAND     ""
+    #INSTALL_COMMAND   ""
+    #TEST_COMMAND      ""
+)
+
+FetchContent_MakeAvailable(grpc)
+]]
+
+endif(ADD_GRPC_EXTERNAL_PROJECT)
+
 # Here we assume that gRPC and all its dependencies are already installed
 # on this system, so they can be located by find_package().
 
 # GRPC and Protocol Buffers libraries location
-list(APPEND CMAKE_PREFIX_PATH "D:\\projects\\grpc\\out\\install")
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/Debug)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/Release)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/RelWithDebInfo)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_BINARY_DIR}/third_party/grpc/install/MinSizeRel)
+
     
 #or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
     
@@ -274,6 +337,32 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GRPC_SERVICE_PROTO_GENERATE
 
 target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
 
+
+
+#[[
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x600)
+endif()
+]]
+
+#set(grpc "grpc")
+#set(GRPC_INSTALL_DIR "")
+#add_subdirectory(third_party/${grpc})
+
+#add_dependencies(${PROJECT_NAME} ${grpc})
+
+
+
+#https://stackoverflow.com/questions/6352123/multiple-directories-under-cmake
+#https://stackoverflow.com/questions/51675100/how-can-i-prevent-a-cmake-external-project-from-updating-reinstalling-whenever
+
+#set(var2 "var2" CACHE INTERNAL "")
+
+# 
+# Deployment (global project files)
+# 
 
 # Install version file
 #message(STATUS "some message ...")
