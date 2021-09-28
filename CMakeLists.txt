@@ -171,15 +171,10 @@ endif()
 # Start adding libraries
 #
 
-include(ExternalProject)
-
-# Here we assume that gRPC and all its dependencies are already installed
-# on this system, so they can be located by find_package().
-
-# GRPC and Protocol Buffers libraries location
-list(APPEND CMAKE_PREFIX_PATH "D:\\projects\\grpc\\out\\install")
-    
-#or can be like this: find_package(OpenCV 3.1 EXACT REQUIRED PATHS /usr/local/opencv3.1)
+#include path
+if (DEFINED LIBRARIES_INSTALL_PREFIX)
+    list(APPEND CMAKE_PREFIX_PATH ${LIBRARIES_INSTALL_PREFIX}/grpc)
+endif()
     
 # Find Protobuf installation
 # Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
@@ -197,7 +192,7 @@ endif()
 
 # Find gRPC installation
 # Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
-find_package(gRPC CONFIG)
+find_package(gRPC CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
 
 set(_GRPC_GRPCPP gRPC::grpc++)
