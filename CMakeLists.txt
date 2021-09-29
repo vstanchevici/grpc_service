@@ -144,7 +144,6 @@ endforeach()
 
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
-#target_compile_definitions(${PROJECT_NAME} PRIVATE _ITERATOR_DEBUG_LEVEL=0)
 
 
 # test mscv
@@ -173,7 +172,8 @@ endif()
 
 #include path
 if (DEFINED LIBRARIES_INSTALL_PREFIX)
-    list(APPEND CMAKE_PREFIX_PATH ${LIBRARIES_INSTALL_PREFIX}/grpc)
+    list(APPEND CMAKE_PREFIX_PATH ${LIBRARIES_INSTALL_PREFIX}/$<CONFIG>/grpc)
+    message(STATUS "CMAKE_PREFIX_PATH: " ${CMAKE_PREFIX_PATH})
 endif()
     
 # Find Protobuf installation
@@ -274,3 +274,4 @@ target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF
 #message(STATUS "some message ...")
 #set(INSTALL_ROOT      "./test/")       # /usr/[local]/share/<project>
 #install(FILES "${PROJECT_BINARY_DIR}/VERSION" DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
+install(TARGETS ${PROJECT_NAME} DESTINATION ./)
