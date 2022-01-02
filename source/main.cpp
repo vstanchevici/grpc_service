@@ -2,38 +2,56 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
-#include <MemoryBlock.h>
+#include <s3/httpexample.grpc.pb.h>
 
-namespace fs = std::filesystem;
+#include <grpcpp/ext/proto_server_reflection_plugin.h>
+#include <grpcpp/grpcpp.h>
+//#include <grpcpp/health_check_service_interface.h>
 
-void test_filesystem()
+using grpc::Server;
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::Status;
+using httpexample::HTTPExample;
+using httpexample::HTTPEReply;
+using httpexample::HTTPERequest;
+
+class GreeterServiceImpl final : public HTTPExample::Service
 {
-    fs::path p1 = "/usr/lib/sendmail.cf"; // portable format
-    fs::path p2 = "C:\\users\\abcdef\\AppData\\Local\\Temp\\"; // native format
+    
+    Status SayHello(ServerContext* context, const HTTPERequest* request, HTTPEReply* reply) override
+    {
+        std::string prefix("Hello ");
+        std::cout << request->name() << std::endl;
+        reply->set_message(prefix + request->name());
+        return Status::OK;
+    }
+};
 
-    fs::path p4 = "var";
-    p4 = p4 / "car" / "smar";
+void RunServer() {
+    std::string server_address("0.0.0.0:8080");
+    GreeterServiceImpl service;
 
+    //grpc::EnableDefaultHealthCheckService(true);
+    //grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    ServerBuilder builder;
+    // Listen on the given address without any authentication mechanism.
+    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    // Register "service" as the instance through which we'll communicate with
+    // clients. In this case it corresponds to an *synchronous* service.
+    builder.RegisterService(&service);
+    // Finally assemble the server.
+    std::unique_ptr<Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on " << server_address << std::endl;
 
-    std::cout << "p1 = " << p1 << '\n'
-        << "p2 = " << p2 << '\n'
-        << "p4 = " << p4 << '\n';
-
-    std::cout << "pn = " << p1.string().c_str() << '\n';
+    // Wait for the server to shutdown. Note that some other thread must be
+    // responsible for shutting down the server for this call to ever return.
+    server->Wait();
 }
 
-
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    std::cout << "!Project Name: " << GRPC_SERVICE_PROJECT_DESCRIPTION << std::endl << std::endl;
-
-    // Create a vector object and add a few elements to it.
-    std::vector<MemoryBlock> v;
-    v.push_back(MemoryBlock(25));
-    v.push_back(MemoryBlock(75));
-
-    // Insert a new element into the second position of the vector.
-    v.insert(v.begin() + 1, MemoryBlock(50));
+    RunServer();
 
     return 0;
 }

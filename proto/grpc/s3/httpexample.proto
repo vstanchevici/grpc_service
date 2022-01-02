@@ -1,0 +1,41 @@
+// Copyright 2021
+//
+//
+//
+//
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.httpexample";
+option java_outer_classname = "HTTPExampleProto";
+option objc_class_prefix = "HE";
+
+//import "google/api/annotations.proto";
+import "annotations.proto";
+
+package httpexample;
+
+// https://habr.com/en/post/337716/
+// https://cloud.google.com/endpoints/docs/grpc/transcoding
+// https://grpc.io/blog/coreos/
+// The greeting service definition.
+service HTTPExample {
+  // Sends a greeting
+  rpc SayHello (HTTPERequest) returns (HTTPEReply){
+    //curl 127.0.0.1:8080/httpexample/victor
+    option (google.api.http) = {
+      get: "/httpexample/{name}"
+    };  
+  }
+}
+
+// The request message containing the user's name.
+message HTTPERequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HTTPEReply {
+  string message = 1;
+}

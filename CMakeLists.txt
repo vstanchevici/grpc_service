@@ -249,13 +249,16 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
     source_group("generated/grpc_services/${_rel_path}" FILES "${_proto_hdrs}")
     source_group("generated/grpc_services/${_rel_path}" FILES "${_grpc_hdrs}")
 
+    #message(STATUS "_proto_path: " ${_proto_path})
+
     add_custom_command(
           COMMENT "Running ${_PROTOBUF_PROTOC} for ${_proto_name}.proto"
           OUTPUT "${_proto_srcs}" "${_proto_hdrs}" "${_grpc_srcs}" "${_grpc_hdrs}"
           COMMAND ${_PROTOBUF_PROTOC}
           ARGS --grpc_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
             --cpp_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
-            -I "${_proto_path}"
+            -I="${_proto_path}"
+            #-I="${GRPC_SERVICE_PROTO_ROOT_PATH}"
             --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
             "${_proto}"
           DEPENDS "${_proto}")
