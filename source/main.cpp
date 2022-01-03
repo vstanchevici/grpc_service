@@ -16,7 +16,7 @@ using httpexample::HTTPExample;
 using httpexample::HTTPEReply;
 using httpexample::HTTPERequest;
 
-class GreeterServiceImpl final : public HTTPExample::Service
+class HTTPExampleServiceImpl final : public HTTPExample::Service
 {
     
     Status SayHello(ServerContext* context, const HTTPERequest* request, HTTPEReply* reply) override
@@ -30,7 +30,7 @@ class GreeterServiceImpl final : public HTTPExample::Service
 
 void RunServer() {
     std::string server_address("0.0.0.0:8080");
-    GreeterServiceImpl service;
+    HTTPExampleServiceImpl service;
 
     //grpc::EnableDefaultHealthCheckService(true);
     //grpc::reflection::InitProtoReflectionServerBuilderPlugin();
