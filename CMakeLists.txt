@@ -230,7 +230,7 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
 
     file(MAKE_DIRECTORY ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
     
-    #message(STATUS "_proto->" ${_proto})
+    message(STATUS "_proto->" ${_proto})
     #message(STATUS "_proto_path->" ${_proto_path})
     #message(STATUS "_rel_path->" ${_rel_path})
     #message(STATUS "_gen_path->" ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
@@ -255,20 +255,22 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
           COMMENT "Running ${_PROTOBUF_PROTOC} for ${_proto_name}.proto"
           OUTPUT "${_proto_srcs}" "${_proto_hdrs}" "${_grpc_srcs}" "${_grpc_hdrs}"
           COMMAND ${_PROTOBUF_PROTOC}
-          ARGS --grpc_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
-            --cpp_out "${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
-            -I="${_proto_path}"
-            -I="${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc"
+          ARGS 
+            --grpc_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
             --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+            --cpp_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
+            --proto_path="${_proto_path}"
+            --proto_path="${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc"
             "${_proto}"
           DEPENDS "${_proto}")
- 
-    target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})    
+    target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})
 endforeach()
+
 
 # Include generated *.pb.h files
 message(STATUS "GRPC_SERVICE_PROTO_GENERATED_PATH: " ${GRPC_SERVICE_PROTO_GENERATED_PATH})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GRPC_SERVICE_PROTO_GENERATED_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/proto/grpc/s3)
 
 target_link_libraries(${PROJECT_NAME} ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF})
 

@@ -2,7 +2,10 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+
 #include <s3/httpexample.grpc.pb.h>
+#include <google/api/annotations.pb.h>
+#include <google/api/http.pb.h>
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
