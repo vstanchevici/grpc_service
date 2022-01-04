@@ -11,8 +11,7 @@ option java_package = "io.grpc.examples.httpexample";
 option java_outer_classname = "HTTPExampleProto";
 option objc_class_prefix = "HE";
 
-import "google/api/annotations.proto";
-//import "annotations.proto";
+import "annotations.proto";
 
 package httpexample;
 
@@ -20,6 +19,7 @@ package httpexample;
 // https://cloud.google.com/endpoints/docs/grpc/transcoding
 // https://grpc.io/blog/coreos/
 // https://github.com/firebase/firebase-ios-sdk/tree/master/Firestore/Protos/protos/google
+// https://github.com/protocolbuffers/protobuf/issues/7439
 // The greeting service definition.
 service HTTPExample {
   // Sends a greeting
