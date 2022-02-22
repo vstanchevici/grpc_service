@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.21-latest
+    ports:
+        #- ${HOST_SSH_PORT}:22
+        - ${HOST_HTTP_PORT}:80
+        - ${HOST_HTTPS_PORT}:443
+    restart: unless-stopped
+    volumes:
+        - ./envoy-grpc.yaml:/etc/envoy/envoy.yaml

@@ -59,7 +59,7 @@ class HTTPExampleServiceImpl final : public HTTPExample::Service
 };
 
 void RunServer() {
-    std::string server_address("0.0.0.0:8080");
+    std::string server_address("0.0.0.0:8880");
     HTTPExampleServiceImpl service;
 
     //grpc::EnableDefaultHealthCheckService(true);
