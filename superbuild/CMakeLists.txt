@@ -38,7 +38,7 @@ endif()
 ExternalProject_Add(grpc
     PREFIX                  ${LIBRARIES_PREFIX}/grpc
     GIT_REPOSITORY          https://github.com/grpc/grpc.git
-    GIT_TAG                 v1.41.0
+    GIT_TAG                 v1.46.6
     GIT_SHALLOW             ON
     GIT_SUBMODULES_RECURSE  ON 
     BUILD_ALWAYS            FALSE

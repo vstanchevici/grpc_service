@@ -17,35 +17,7 @@ using httpexample::HTTPExample;
 using httpexample::HTTPEReply;
 using httpexample::HTTPERequest;
 
-/*
-const char descriptor_table_protodef_annotations_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-"\n\021annotations.proto\022\ngoogle.api\032\025google/"
-"api/http.proto\032 google/protobuf/descript"
-"or.proto:E\n\004http\022\036.google.protobuf.Metho"
-"dOptions\030\260\312\274\" \001(\0132\024.google.api.HttpRuleB"
-"n\n\016com.google.apiB\020AnnotationsProtoP\001ZAg"
-"oogle.golang.org/genproto/googleapis/api"
-"/annotations;annotations\242\002\004GAPIb\006proto3"
-;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* const descriptor_table_annotations_2eproto_deps[2] = {
-  &::descriptor_table_google_2fapi_2fhttp_2eproto,
-  &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-};
 
-const char descriptor_table_protodef_annotations_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-"\n\021annotations.proto\022\ngoogle.api\032\nhttp.pr"
-"oto\032 google/protobuf/descriptor.proto:E\n"
-"\004http\022\036.google.protobuf.MethodOptions\030\260\312"
-"\274\" \001(\0132\024.google.api.HttpRuleBn\n\016com.goog"
-"le.apiB\020AnnotationsProtoP\001ZAgoogle.golan"
-"g.org/genproto/googleapis/api/annotation"
-"s;annotations\242\002\004GAPIb\006proto3"
-;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* const descriptor_table_annotations_2eproto_deps[2] = {
-  &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-  &::descriptor_table_http_2eproto,
-};
-*/
 class HTTPExampleServiceImpl final : public HTTPExample::Service
 {
     
