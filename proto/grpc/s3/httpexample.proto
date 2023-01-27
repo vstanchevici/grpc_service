@@ -11,7 +11,7 @@ option java_package = "io.grpc.examples.httpexample";
 option java_outer_classname = "HTTPExampleProto";
 option objc_class_prefix = "HE";
 
-import "annotations.proto";
+import "google/api/annotations.proto";
 
 package httpexample;
 

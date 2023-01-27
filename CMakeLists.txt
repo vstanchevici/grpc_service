@@ -207,7 +207,7 @@ endif()
 find_package(Threads REQUIRED)
 
 # GRPC service Proto files
-set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc")
+set(GRPC_SERVICE_PROTO_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 file(RELATIVE_PATH GRPC_SERVICE_PROTO_RELATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${GRPC_SERVICE_PROTO_ROOT_PATH}")
 set(GRPC_SERVICE_PROTO_GENERATED_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated/${GRPC_SERVICE_PROTO_RELATIVE_PATH}")
 
@@ -225,12 +225,12 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
     get_filename_component(_proto_name "${_proto}" NAME_WLE)
     get_filename_component(_proto_path "${_proto}" PATH)
     file(RELATIVE_PATH _rel_path "${GRPC_SERVICE_PROTO_ROOT_PATH}" "${_proto_path}")
-    #string(REPLACE "/" "\\" _rel_path "${_rel_path}")
-    source_group("grpc_services\\${_rel_path}" FILES "${_proto}")
+    source_group("proto/${_rel_path}" FILES "${_proto}")
 
     file(MAKE_DIRECTORY ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
     
-    message(STATUS "_proto->" ${_proto})
+    #message(STATUS "_proto->" ${_proto})
+    #message(STATUS "_proto_name_ext->" ${_proto_name}.proto)
     #message(STATUS "_proto_path->" ${_proto_path})
     #message(STATUS "_rel_path->" ${_rel_path})
     #message(STATUS "_gen_path->" ${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path})
@@ -244,10 +244,10 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
     
     #message(STATUS "_proto_srcs->" ${_proto_srcs})
 
-    source_group("generated/grpc_services/${_rel_path}" FILES "${_proto_srcs}")
-    source_group("generated/grpc_services/${_rel_path}" FILES "${_grpc_srcs}")
-    source_group("generated/grpc_services/${_rel_path}" FILES "${_proto_hdrs}")
-    source_group("generated/grpc_services/${_rel_path}" FILES "${_grpc_hdrs}")
+    source_group("generated/proto/${_rel_path}" FILES "${_proto_srcs}")
+    source_group("generated/proto/${_rel_path}" FILES "${_grpc_srcs}")
+    source_group("generated/proto/${_rel_path}" FILES "${_proto_hdrs}")
+    source_group("generated/proto/${_rel_path}" FILES "${_grpc_hdrs}")
 
     #message(STATUS "_proto_path: " ${_proto_path})
 
@@ -256,12 +256,11 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
           OUTPUT "${_proto_srcs}" "${_proto_hdrs}" "${_grpc_srcs}" "${_grpc_hdrs}"
           COMMAND ${_PROTOBUF_PROTOC}
           ARGS 
-            --grpc_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
+            --grpc_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}"
             --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-            --cpp_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}"
-            --proto_path="${_proto_path}"
-            --proto_path="${CMAKE_CURRENT_SOURCE_DIR}/proto/grpc"
-            "${_proto}"
+            --cpp_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}"
+            --proto_path="${CMAKE_CURRENT_SOURCE_DIR}/proto"
+            "${_rel_path}/${_proto_name}.proto"
           DEPENDS "${_proto}")
     target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})
 endforeach()
