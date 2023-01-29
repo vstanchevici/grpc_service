@@ -1,6 +1,9 @@
 #Ignore autogenerate
 include/version.h
 
+#Ignore files
+.DS_Store
+
 # Ignore build directory 
 build/
 out/

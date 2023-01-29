@@ -3,6 +3,15 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(grpc_service-superbuild)
 
+if(CMAKE_XCODE_BUILD_SYSTEM VERSION_GREATER_EQUAL 12)
+  cmake_policy(SET CMP0114 NEW)
+else()
+  # This test is very noisy with warnings about this policy if we don't
+  # explicitly set it. Projects shouldn't do this, but for test code this
+  # is reasonable.
+  cmake_policy(SET CMP0114 OLD)
+endif()
+
 # Set standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

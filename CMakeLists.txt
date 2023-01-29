@@ -260,6 +260,7 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
             --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
             --cpp_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}"
             --proto_path="${CMAKE_CURRENT_SOURCE_DIR}/proto"
+            --include_source_info --descriptor_set_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/envoy-proxy/${_proto_name}.ep.pb"
             "${_rel_path}/${_proto_name}.proto"
           DEPENDS "${_proto}")
     target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})
