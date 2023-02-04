@@ -9,3 +9,4 @@ services:
     restart: unless-stopped
     volumes:
         - ./envoy.yaml:/etc/envoy/envoy.yaml
+        - ./httpexample.ep.pb:/tmp/envoy/httpexample.ep.pb
