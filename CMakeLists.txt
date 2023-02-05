@@ -144,6 +144,7 @@ endforeach()
 
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_ROOT_PATH}/bcrypt)
 
 
 # test mscv
@@ -261,7 +262,7 @@ foreach(_proto IN ITEMS ${PROTO_LIST})
             --cpp_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}"
             --proto_path="${CMAKE_CURRENT_SOURCE_DIR}/proto"
             --include_imports
-            --include_source_info --descriptor_set_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/envoy-proxy/${_proto_name}.ep.pb"
+            --include_source_info --descriptor_set_out="${GRPC_SERVICE_PROTO_GENERATED_PATH}/${_rel_path}/${_proto_name}.pb.sd"
             "${_rel_path}/${_proto_name}.proto"
           DEPENDS "${_proto}")
     target_sources(${PROJECT_NAME} PRIVATE ${_proto_srcs} ${_proto_hdrs} ${_grpc_srcs} ${_grpc_hdrs})
