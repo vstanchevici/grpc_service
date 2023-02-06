@@ -12,16 +12,15 @@ namespace bcrypt
 		#include "pwd.h"
 	}
 
-	char* GenerateHash(const char* password, unsigned int rounds)
+	char* GenerateHash(const char* password, unsigned int rounds = 12)
 	{
-		char* salt = bcrypt_gensalt(rounds);;
+		char* salt = bcrypt_gensalt(rounds);
 		return bcrypt(password, salt);
 	}
 
 	bool ValidatePassword(const char* password, const char* hash)
 	{
-		char* got_hash = bcrypt(password, hash);
-		
-		return !strcmp(hash, got_hash);
+		char* new_hash = bcrypt(password, hash);
+		return !strcmp(hash, new_hash);
 	}
 }

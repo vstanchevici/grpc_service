@@ -18,7 +18,7 @@ namespace bcrypt
 
 std::string password = "top_secret";
 
-std::string hash = bcrypt::GenerateHash(password.c_str(), 13);
+std::string hash = bcrypt::GenerateHash(password.c_str());
 
 std::cout << "Hash      : " << hash << std::endl;
 std::cout << "Hash Size : " << hash.size() << std::endl;
