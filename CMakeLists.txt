@@ -144,7 +144,13 @@ endforeach()
 
 add_executable(${PROJECT_NAME} ${INCLUDE_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_ROOT_PATH} ${SRC_ROOT_PATH})
-target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_ROOT_PATH}/bcrypt)
+target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_ROOT_PATH}bcrypt)
+
+set(BCRYPT_DEFINES  "u_int8_t=unsigned __int8;u_int16_t=unsigned __int16;u_int32_t=unsigned __int32")
+message(STATUS ${BCRYPT_DEFINES})
+set_source_files_properties(${SRC_ROOT_PATH}bcrypt/bcrypt.c PROPERTIES COMPILE_DEFINITIONS "${BCRYPT_DEFINES}")
+set_source_files_properties(${SRC_ROOT_PATH}bcrypt/blowfish.c PROPERTIES COMPILE_DEFINITIONS "${BCRYPT_DEFINES}")
+set_source_files_properties(${SRC_ROOT_PATH}bcrypt/bcrypt.cpp PROPERTIES COMPILE_DEFINITIONS "${BCRYPT_DEFINES}")
 
 
 # test mscv

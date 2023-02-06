@@ -12,10 +12,10 @@
 	#include <string.h>
 	#include <time.h>
 
-	#define u_int8_t unsigned __int8
-	#define u_int16_t unsigned __int16
-	#define u_int32_t unsigned __int32
-	#define u_int64_t unsigned __int64
+	//#define u_int8_t unsigned __int8
+	//#define u_int16_t unsigned __int16
+	//#define u_int32_t unsigned __int32
+	//#define u_int64_t unsigned __int64
 
 	#define WRAP 
 

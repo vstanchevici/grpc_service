@@ -6,27 +6,11 @@
 #ifndef _BCRYPT_H_
 #define _BCRYPT_H_
 
-
-
 namespace bcrypt
 {
-	extern "C"
-	{
-		#include "pwd.h"
-	}
+	char* GenerateHash(const char* password, unsigned int rounds);
 
-	static char* GenerateHash(const char* password, unsigned int rounds)
-	{
-		char* salt = bcrypt_gensalt(rounds);;
-		return bcrypt(password, salt);
-	}
-
-	bool ValidatePassword(const char* password, const char* hash)
-	{
-		char* got_hash = bcrypt(password, hash);
-		
-		return !strcmp(hash, got_hash);
-	}
+	bool ValidatePassword(const char* password, const char* hash);
 }
 
 /*
