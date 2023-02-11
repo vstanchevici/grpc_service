@@ -148,6 +148,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_ROOT_PATH}bcrypt)
 
 include (CheckTypeSize)
 check_type_size("u_int32_t" SIZEOF_U_INT32_T)
+message(STATUS ${SIZEOF_U_INT32_T})
+
+try_compile(HAVE_B SOURCE_FROM_CONTENT test_macros.c "void func(){} DEF_WEAK(func); int main(){return 0;}")
+
 if (NOT SIZEOF_U_INT32_T)
     set(BCRYPT_DEFINES  "u_int8_t=unsigned __int8;u_int16_t=unsigned __int16;u_int32_t=unsigned __int32")
 
@@ -156,6 +160,7 @@ if (NOT SIZEOF_U_INT32_T)
     set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/source/bcrypt/bcrypt.cpp PROPERTIES COMPILE_DEFINITIONS "${BCRYPT_DEFINES}")
 endif()
 
+             
 # test msvc
 #https://stackoverflow.com/questions/10046114/in-cmake-how-can-i-test-if-the-compiler-is-clang
 
